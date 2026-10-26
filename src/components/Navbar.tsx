@@ -26,6 +26,14 @@ export default function Navbar() {
       <ul className="flex items-center gap-1 text-lg font-medium">
         <li>
           <Link
+            to="/"
+            className="rounded-full px-4 py-2 transition hover:bg-secondary/10"
+          >
+            Dashboard
+          </Link>
+        </li>
+        <li>
+          <Link
             to="/journal"
             className="rounded-full px-4 py-2 transition hover:bg-secondary/10"
           >
