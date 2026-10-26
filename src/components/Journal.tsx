@@ -1,8 +1,8 @@
 
 export default function Journal() {
   return (
-    <div className="Journal">
+    <h1 className="Journal p-6 text-2xl font-semibold text-center">
       <div>Journal</div>
-    </div>
+    </h1>
   );
 }
