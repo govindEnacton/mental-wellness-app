@@ -1,12 +1,13 @@
 import { Link } from "react-router";
+import ThemeButton from "./ThemeButton";
 
 export default function Navbar() {
   return (
-    <nav className="flex h-16 w-full items-center justify-around bg-primary px-6 text-secondary">
+    <nav className="flex h-16 w-full items-center justify-around bg-primary px-6 text-[#323437]">
       <Link
         to="/"
         aria-label="MindWell home"
-        className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-primary"
+        className="flex h-10 w-10 items-center justify-center rounded-full bg-[#323437] text-primary"
       >
         <svg
           viewBox="0 0 24 24"
@@ -57,6 +58,7 @@ export default function Navbar() {
           </Link>
         </li>
       </ul>
+      <ThemeButton/>
     </nav>
   );
 }

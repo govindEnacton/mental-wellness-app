@@ -94,7 +94,7 @@ export default function Journal() {
         </select>
         <button
           type="submit"
-          className="mt-3 block rounded-full bg-primary px-6 py-2 font-medium text-secondary transition hover:opacity-90"
+          className="mt-3 block rounded-full bg-primary px-6 py-2 font-medium text-[#323437] transition hover:opacity-90"
         >
           Add journal
         </button>
