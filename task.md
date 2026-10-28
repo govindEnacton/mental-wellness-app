@@ -16,11 +16,11 @@ Progress: **7 done / 25 remaining** (rough item count, not effort-weighted)
 
 ### Journal
 
-- [ ] Journal text editor
-- [ ] Date for each entry (default: today)
-- [ ] Category tags per entry (Grateful, Stressful, etc.)
-- [ ] Save entries to localStorage
-- [ ] Load and display past entries
+- [ ] Journal text editor✅
+- [ ] Date for each entry (default: today)✅
+- [ ] Category tags per entry (Grateful, Stressful, etc.)✅
+- [ ] Save entries to localStorage✅
+- [ ] Load and display past entries✅
 
 ### Mood tracker
 

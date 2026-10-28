@@ -4,6 +4,7 @@
   --color-primary : #e2b714;
   --color-secondary : #323437;
   --color-tertiary: #646669;
+  --color-alert : red;
 }
 
 :root {
