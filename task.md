@@ -1,6 +1,6 @@
 # Mental Wellness Journal — Tasks
 
-Progress: **7 done / 25 remaining** (rough item count, not effort-weighted)
+Progress: Journal entries can now be written, categorized, saved, viewed, and deleted. Mood tracking and trends remain next.
 
 ## ✅ Done
 
@@ -16,11 +16,12 @@ Progress: **7 done / 25 remaining** (rough item count, not effort-weighted)
 
 ### Journal
 
-- [ ] Journal text editor✅
-- [ ] Date for each entry (default: today)✅
-- [ ] Category tags per entry (Grateful, Stressful, etc.)✅
-- [ ] Save entries to localStorage✅
-- [ ] Load and display past entries✅
+- [x] Journal text editor ✅
+- [x] Creation date for each entry (defaults to today) ✅
+- [x] Category tag per entry (Grateful, Stressful, Reflective, or none) ✅
+- [x] Save entries to localStorage ✅
+- [x] Load and display past entries ✅
+- [x] Delete entries with confirmation ✅
 
 ### Mood tracker
 
@@ -28,7 +29,7 @@ Progress: **7 done / 25 remaining** (rough item count, not effort-weighted)
 - [ ] Save one mood per date
 - [ ] Persist moods to localStorage
 - [ ] Mood trend chart over time
-- [ ] Implement `TrackMood.tsx` and wire `/trackmood` (route currently `element={""}`)
+- [ ] Implement mood tracking in `TrackMood.tsx` (`/trackmood` is already wired)
 
 ### Quotes
 
@@ -37,7 +38,7 @@ Progress: **7 done / 25 remaining** (rough item count, not effort-weighted)
 
 ### App and calendar
 
-- [ ] Navbar with links to all pages (`Navbar.tsx` exists but is empty)
+- [x] Navbar with links to all pages ✅
 - [ ] Dashboard overview content (currently just "hey")
 - [ ] Calendar view of journal entries and moods
 - [ ] Calendar month navigation (previous/next month)

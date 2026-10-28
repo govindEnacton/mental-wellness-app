@@ -4,7 +4,10 @@ type JournalEntry = {
   id: string;
   text: string;
   createdAt: string;
+  tag: string;
 };
+
+const tags = ["Grateful", "Stressful", "Reflective"];
 
 function loadEntries(): JournalEntry[] {
   try {
@@ -12,7 +15,8 @@ function loadEntries(): JournalEntry[] {
     if (!Array.isArray(entries) || !entries.every((entry) =>
       entry !== null && typeof entry === "object" &&
       typeof entry.id === "string" && typeof entry.text === "string" &&
-      typeof entry.createdAt === "string"
+      typeof entry.createdAt === "string" &&
+      (entry.tag === undefined || typeof entry.tag === "string")
     )) throw new Error("Invalid journal entries");
     return entries;
   } catch {
@@ -33,6 +37,7 @@ function saveEntries(entries: JournalEntry[]) {
 export default function Journal() {
   const [entries, setEntries] = useState<JournalEntry[]>(loadEntries);
   const [text, setText] = useState("");
+  const [tag, setTag] = useState("");
 
   const addEntry = (e: FormEvent) => {
     e.preventDefault();
@@ -43,12 +48,14 @@ export default function Journal() {
         id: crypto.randomUUID(),
         text: text.trim(),
         createdAt: new Date().toISOString(),
+        tag,
       },
       ...entries,
     ];
     if (!saveEntries(next)) return;
     setEntries(next);
     setText("");
+    setTag("");
   };
 
   const removeEntry = (id: string) => {
@@ -72,9 +79,22 @@ export default function Journal() {
           rows={4}
           className="w-full rounded-lg border border-tertiary bg-transparent p-4 outline-none focus:border-primary"
         />
+        <label className="mt-3 block" htmlFor="journal-tag">Category</label>
+        <select
+          id="journal-tag"
+          required
+          value={tag}
+          onChange={(e) => setTag(e.target.value)}
+          className="rounded-lg border border-tertiary bg-secondary p-2"
+        >
+          <option value="">No category</option>
+          {tags.map((category) => (
+            <option key={category} value={category}>{category}</option>
+          ))}
+        </select>
         <button
           type="submit"
-          className="mt-3 rounded-full bg-primary px-6 py-2 font-medium text-secondary transition hover:opacity-90"
+          className="mt-3 block rounded-full bg-primary px-6 py-2 font-medium text-secondary transition hover:opacity-90"
         >
           Add journal
         </button>
@@ -90,6 +110,7 @@ export default function Journal() {
               className="rounded-lg border border-tertiary p-4"
             >
               <p className="whitespace-pre-wrap">{entry.text}</p>
+              {entry.tag && <span className="text-sm text-primary">{entry.tag}</span>}
               <div className="mt-2 flex justify-between text-sm text-tertiary">
                 <time dateTime={entry.createdAt}>
                   {new Date(entry.createdAt).toLocaleString()}
