@@ -1,56 +1,40 @@
 # Mental Wellness Journal — Tasks
 
-Progress: Journal entries can now be written, categorized, saved, viewed, and deleted. Mood tracking and trends remain next.
+Progress: All core and additional spec features are implemented.
 
-## ✅ Done
+## Core features
 
-- [x] React + TypeScript + Vite project scaffolded ✅
-- [x] React Router installed and configured (`BrowserRouter`) ✅
-- [x] Component files created: Dashboard, Journal, Quotes, TrackMood, Navbar, Not-found ✅
-- [x] Routing skeleton for `/`, `/journal`, `/quotes` ✅
-- [x] 404 page and catch-all route ✅
-- [x] Inspirational quote: fetch + render + loading state (currently dummyjson.com, not ZenQuotes) ✅
-- [x] TypeScript build (`tsc -b && vite build`) and ESLint pass ✅
+- [x] React + TypeScript + Vite + Tailwind project with routing
+- [x] Journal text editor with a required category tag (Grateful, Stressful, Reflective)
+- [x] Journal entries saved to localStorage, listed newest first, and deletable with confirmation
+- [x] 10-step mood picker (Angry through Excited)
+- [x] Multiple mood entries per day, with date and time selection
+- [x] One mood entry per minute validation
+- [x] Mood trend chart: selected day, this month, last month
+- [x] Daily quote fetched from dummyjson and cached per day
+- [x] Quote card with a gentle entrance animation
+- [x] Calming gradients, soft cards, and smooth transitions
+- [x] Responsive navbar and page layouts
+- [x] Dark mode toggle with saved preference and no first-paint flash
 
-## Remaining — Functionality (do first)
+## Dashboard and calendar
 
-### Journal
+- [x] Greeting, current date, and quick links to journal and mood tracking
+- [x] Today's mood and journal summary
+- [x] This month's mood and journal counts
+- [x] Calendar with previous/next month navigation and a Today shortcut
+- [x] Calendar shows each day's average mood emoji and a journal-entry dot
+- [x] Selecting a date shows that day's mood entries and journal text
+- [x] Calendar helpers and dashboard data helpers covered by tests
 
-- [x] Journal text editor ✅
-- [x] Creation date for each entry (defaults to today) ✅
-- [x] Category tag per entry (Grateful, Stressful, Reflective, or none) ✅
-- [x] Save entries to localStorage ✅
-- [x] Load and display past entries ✅
-- [x] Delete entries with confirmation ✅
+## Verification
 
-### Mood tracker
+- [x] `bun run build`
+- [x] `bun run lint`
+- [x] `bun test`
 
-- [ ] Mood picker with icons (happy, sad, stressed, etc.)
-- [ ] Save one mood per date
-- [ ] Persist moods to localStorage
-- [ ] Mood trend chart over time
-- [ ] Implement mood tracking in `TrackMood.tsx` (`/trackmood` is already wired)
+## Notes
 
-### Quotes
-
-- [ ] One quote per day (cache by date) instead of a new random quote per page load
-- [ ] Optional: switch back to ZenQuotes via a proxy/backend (browser CORS blocks it)
-
-### App and calendar
-
-- [x] Navbar with links to all pages ✅
-- [ ] Dashboard overview content (currently just "hey")
-- [ ] Calendar view of journal entries and moods
-- [ ] Calendar month navigation (previous/next month)
-- [ ] Select a date to see that day's entry and mood
-
-## Remaining — UI (do last)
-
-- [ ] Calming color palette and gradients
-- [ ] Responsive layout (mobile and desktop)
-- [ ] Smooth transitions and quote animations
-- [ ] Dark mode toggle with saved preference
-- [ ] Style the journal editor and tags
-- [ ] Style the mood picker and trend chart
-- [ ] Style the calendar
-- [ ] Style the navbar
+- dummyjson (`https://dummyjson.com/quotes/random`) replaces ZenQuotes because ZenQuotes does not send CORS headers for browser requests.
+- TrackMood keeps the requested desktop dimensions; it stacks vertically on smaller screens.
+- Mood ratings saved under the old 5-point scale are interpreted as the new 10-point scale. Clear `mood-entries` in localStorage if you have old test data.

@@ -1,47 +1,14 @@
 import { useState, type FormEvent } from "react";
-
-type JournalEntry = {
-  id: string;
-  text: string;
-  createdAt: string;
-  tag: string;
-};
-
-const tags = ["Grateful", "Stressful", "Reflective"];
-
-function loadEntries(): JournalEntry[] {
-  try {
-    const entries: unknown = JSON.parse(localStorage.getItem("journal-entries") ?? "[]");
-    if (!Array.isArray(entries) || !entries.every((entry) =>
-      entry !== null && typeof entry === "object" &&
-      typeof entry.id === "string" && typeof entry.text === "string" &&
-      typeof entry.createdAt === "string" &&
-      (entry.tag === undefined || typeof entry.tag === "string")
-    )) throw new Error("Invalid journal entries");
-    return entries;
-  } catch {
-    return [];
-  }
-}
-
-function saveEntries(entries: JournalEntry[]) {
-  try {
-    localStorage.setItem("journal-entries", JSON.stringify(entries));
-    return true;
-  } catch {
-    alert("Could not save your journal. Check your browser storage and try again.");
-    return false;
-  }
-}
+import { loadJournalEntries, saveJournalEntries, tags, type JournalEntry } from "../models/journal";
 
 export default function Journal() {
-  const [entries, setEntries] = useState<JournalEntry[]>(loadEntries);
+  const [entries, setEntries] = useState<JournalEntry[]>(loadJournalEntries);
   const [text, setText] = useState("");
   const [tag, setTag] = useState("");
 
-  const addEntry = (e: FormEvent) => {
-    e.preventDefault();
-    if (!text.trim()) return;
+  const addEntry = (event: FormEvent) => {
+    event.preventDefault();
+    if (!text.trim() || !tag) return;
 
     const next = [
       {
@@ -52,7 +19,10 @@ export default function Journal() {
       },
       ...entries,
     ];
-    if (!saveEntries(next)) return;
+    if (!saveJournalEntries(next)) {
+      alert("Could not save your journal. Check your browser storage and try again.");
+      return;
+    }
     setEntries(next);
     setText("");
     setTag("");
@@ -62,70 +32,87 @@ export default function Journal() {
     const canDelete = confirm("Delete this journal entry? This cannot be undone.");
     if (canDelete) {
       const next = entries.filter((item) => item.id !== id);
-      if (saveEntries(next)) setEntries(next);
+      if (saveJournalEntries(next)) setEntries(next);
     }
   };
 
   return (
-    <div className="mx-auto max-w-2xl p-6">
-      <h1 className="mb-6 text-3xl font-semibold text-primary">Journal</h1>
+    <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
+      <header>
+        <h1 className="text-3xl font-semibold text-primary">Journal</h1>
+        <p className="mt-1 text-tertiary">Write freely. No one else can read this.</p>
+      </header>
 
-      <form onSubmit={addEntry} className="mb-8">
+      <form onSubmit={addEntry} className="mt-6 rounded-[2rem] border border-tertiary/30 bg-secondary/70 p-4 shadow-sm sm:p-6">
+        <label htmlFor="journal-entry" className="text-sm font-medium">How was your day?</label>
         <textarea
+          id="journal-entry"
           value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="How was your day?"
-          aria-label="Journal entry"
-          rows={4}
-          className="w-full rounded-lg border border-tertiary bg-transparent p-4 outline-none focus:border-primary"
+          onChange={(event) => setText(event.target.value)}
+          placeholder="A few honest lines are enough…"
+          rows={5}
+          className="mt-2 w-full resize-y rounded-xl border border-tertiary/40 bg-transparent p-4 outline-none transition focus:border-primary"
         />
-        <label className="mt-3 block" htmlFor="journal-tag">Category</label>
-        <select
-          id="journal-tag"
-          required
-          value={tag}
-          onChange={(e) => setTag(e.target.value)}
-          className="rounded-lg border border-tertiary bg-secondary p-2"
-        >
-          <option value="">No category</option>
-          {tags.map((category) => (
-            <option key={category} value={category}>{category}</option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          className="mt-3 block rounded-full bg-primary px-6 py-2 font-medium text-[#323437] transition hover:opacity-90"
-        >
-          Add journal
-        </button>
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <label className="text-sm" htmlFor="journal-tag">
+            Category
+            <select
+              id="journal-tag"
+              required
+              value={tag}
+              onChange={(event) => setTag(event.target.value)}
+              className="mt-1 block rounded-lg border border-tertiary/40 bg-secondary p-2"
+            >
+              <option value="" disabled>Select a category</option>
+              {tags.map((category) => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="submit"
+            disabled={!text.trim() || !tag}
+            className="rounded-full bg-primary px-6 py-2 font-medium text-[#323437] transition hover:opacity-90 disabled:opacity-50"
+          >
+            Add journal
+          </button>
+        </div>
       </form>
 
-      {entries.length === 0 ? (
-        <p className="text-tertiary">No entries yet.</p>
-      ) : (
-        <ul className="space-y-4">
-          {entries.map((entry) => (
-            <li
-              key={entry.id}
-              className="rounded-lg border border-tertiary p-4"
-            >
-              <p className="whitespace-pre-wrap">{entry.text}</p>
-              {entry.tag && <span className="text-sm text-primary">{entry.tag}</span>}
-              <div className="mt-2 flex justify-between text-sm text-tertiary">
-                <time dateTime={entry.createdAt}>
-                  {new Date(entry.createdAt).toLocaleString()}
-                </time>
-                <button
-                  className="px-2 bg-alert/10 w-fit text-alert border-alert border rounded-sm hover:bg-secondary cursor-pointer"
-                  onClick={() => removeEntry(entry.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="mt-8">
+        <h2 className="text-lg font-semibold">Past entries</h2>
+        {entries.length === 0 ? (
+          <p className="mt-2 text-tertiary">No entries yet.</p>
+        ) : (
+          <ul className="mt-3 space-y-4">
+            {entries.map((entry) => (
+              <li
+                key={entry.id}
+                className="rounded-2xl border border-tertiary/30 bg-secondary/70 p-4 shadow-sm transition hover:border-primary/40"
+              >
+                {entry.tag && (
+                  <span className="inline-block rounded-full bg-primary/15 px-3 py-1 text-xs font-medium text-primary">
+                    {entry.tag}
+                  </span>
+                )}
+                <p className="mt-2 whitespace-pre-wrap">{entry.text}</p>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm text-tertiary">
+                  <time dateTime={entry.createdAt}>
+                    {new Date(entry.createdAt).toLocaleString()}
+                  </time>
+                  <button
+                    type="button"
+                    onClick={() => removeEntry(entry.id)}
+                    className="cursor-pointer rounded-lg border border-alert bg-alert/10 px-2 py-1 text-alert transition hover:bg-alert hover:text-white"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
