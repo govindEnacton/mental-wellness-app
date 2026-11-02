@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { monthCells } from "../models/calendar";
 import { localDate } from "../models/date";
+import { loadJournalEntries, type JournalEntry } from "../models/journal";
 import { averageRating, chartPoints, dayEntries, loadMoodEntries, moodForRating, moods, sameMinute, saveMoodEntries, type MoodEntry, type Period } from "../models/mood";
+import Calendar from "./Calendar";
 
 function displayDate(dateKey: string, today: string) {
   if (!dateKey) return "No date selected";
@@ -12,6 +13,7 @@ function displayDate(dateKey: string, today: string) {
 
 export default function TrackMood() {
   const [entries, setEntries] = useState<MoodEntry[]>(loadMoodEntries);
+  const [journals] = useState<JournalEntry[]>(loadJournalEntries);
   const [rating, setRating] = useState<number | null>(null);
   const [date, setDate] = useState(() => localDate(new Date()));
   const [time, setTime] = useState(() => new Date().toTimeString().slice(0, 5));
@@ -24,11 +26,6 @@ export default function TrackMood() {
   const today = localDate(new Date());
   const points = chartPoints(entries, period, date);
   const average = averageRating(dayEntries(entries, date));
-
-  const year = view.getFullYear();
-  const month = view.getMonth();
-  const monthLabel = view.toLocaleDateString(undefined, { month: "long", year: "numeric" });
-  const cells = monthCells(year, month);
 
   function pickDate(dateKey: string) {
     setDate(dateKey);
@@ -102,36 +99,15 @@ export default function TrackMood() {
 
       <div className="flex w-full flex-col gap-3 lg:h-[60vh] lg:w-1/4 lg:gap-4">
         <div className="flex flex-col overflow-y-auto rounded-lg border border-tertiary/40 bg-secondary/70 p-4 shadow-sm lg:h-[59%]">
-          <div className="flex items-center justify-between gap-2">
-            <button type="button" aria-label="Previous month" onClick={() => setView(new Date(year, month - 1, 1))} className="rounded px-2 py-1 transition hover:bg-primary/20">‹</button>
-            <p className="text-sm font-medium">{monthLabel}</p>
-            <button type="button" aria-label="Next month" onClick={() => setView(new Date(year, month + 1, 1))} className="rounded px-2 py-1 transition hover:bg-primary/20">›</button>
-          </div>
-
-          <div className="mt-2 grid grid-cols-7 gap-1 text-center text-[10px] text-tertiary">
-            {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => <span key={day}>{day}</span>)}
-          </div>
-          <div className="mt-1 grid grid-cols-7 gap-1">
-            {cells.map((day, index) => {
-              if (day === null) return <span key={`empty-${index}`} />;
-              const dateKey = localDate(new Date(year, month, day));
-              const isFuture = dateKey > today;
-              const isSelected = dateKey === date;
-              return (
-                <button
-                  key={dateKey}
-                  type="button"
-                  disabled={isFuture}
-                  onClick={() => pickDate(dateKey)}
-                  aria-label={new Date(year, month, day).toLocaleDateString()}
-                  aria-pressed={isSelected}
-                  className={`h-6 rounded text-xs transition ${isSelected ? "bg-primary text-[#323437]" : isFuture ? "opacity-30" : "hover:bg-primary/20"} ${dateKey === today && !isSelected ? "ring-1 ring-primary" : ""}`}
-                >
-                  {day}
-                </button>
-              );
-            })}
-          </div>
+          <Calendar
+            compact
+            view={view}
+            onViewChange={setView}
+            selected={date}
+            onSelect={pickDate}
+            moods={entries}
+            journals={journals}
+          />
 
           <div className="mt-3 grid grid-cols-2 gap-2">
             <label className="text-xs text-tertiary">
@@ -159,9 +135,6 @@ export default function TrackMood() {
               />
             </label>
           </div>
-          <p className="mt-2 text-sm text-tertiary">
-            {displayDate(date, today)}{average !== null ? ` · avg ${moodForRating(average).emoji}` : ""}
-          </p>
         </div>
 
         <div className="flex flex-col overflow-y-auto rounded-lg border border-tertiary/40 bg-secondary/70 p-4 shadow-sm lg:h-[39%]">

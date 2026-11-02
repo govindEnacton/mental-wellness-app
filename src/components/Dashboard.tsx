@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { monthCells } from "../models/calendar";
 import { localDate } from "../models/date";
 import { journalEntriesOnDate, loadJournalEntries, type JournalEntry } from "../models/journal";
 import { averageRating, dayEntries, loadMoodEntries, moodForRating, type MoodEntry } from "../models/mood";
+import Calendar from "./Calendar";
 import QuoteCard from "./QuoteCard";
-
-const weekdays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 function greetingFor(hour: number) {
   if (hour < 12) return "Good morning";
@@ -35,9 +33,6 @@ export default function Dashboard() {
 
   const now = new Date();
   const today = localDate(now);
-  const year = view.getFullYear();
-  const month = view.getMonth();
-  const monthLabel = view.toLocaleDateString(undefined, { month: "long", year: "numeric" });
   const currentMonthPrefix = today.slice(0, 7);
 
   const selectedMoods = dayEntries(moods, selected);
@@ -54,19 +49,6 @@ export default function Dashboard() {
   const todayJournalCount = journalEntriesOnDate(journals, today).length;
   const monthMoodCount = moods.filter((entry) => localDate(new Date(entry.createdAt)).startsWith(currentMonthPrefix)).length;
   const monthJournalCount = journals.filter((entry) => localDate(new Date(entry.createdAt)).startsWith(currentMonthPrefix)).length;
-
-  const moodsByDay = new Map<string, MoodEntry[]>();
-  for (const entry of moods) {
-    const key = localDate(new Date(entry.createdAt));
-    moodsByDay.set(key, [...(moodsByDay.get(key) ?? []), entry]);
-  }
-  const journalDays = new Set(journals.map((entry) => localDate(new Date(entry.createdAt))));
-
-  function goToToday() {
-    const current = new Date();
-    setView(new Date(current.getFullYear(), current.getMonth(), 1));
-    setSelected(localDate(current));
-  }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
@@ -115,99 +97,22 @@ export default function Dashboard() {
       </div>
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-        <section className="rounded-[2rem] border border-tertiary/30 bg-secondary/70 p-4 shadow-sm sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-semibold">Your calendar</h2>
-              <p className="text-sm text-tertiary">{monthLabel}</p>
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={goToToday}
-                className="rounded-full border border-tertiary/40 px-3 py-1 text-sm transition hover:bg-primary/10"
-              >
-                Today
-              </button>
-              <button
-                type="button"
-                aria-label="Previous month"
-                onClick={() => setView(new Date(year, month - 1, 1))}
-                className="rounded-full px-2 py-1 text-lg leading-none transition hover:bg-primary/15"
-              >
-                ‹
-              </button>
-              <button
-                type="button"
-                aria-label="Next month"
-                onClick={() => setView(new Date(year, month + 1, 1))}
-                className="rounded-full px-2 py-1 text-lg leading-none transition hover:bg-primary/15"
-              >
-                ›
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs text-tertiary">
-            {weekdays.map((day) => <span key={day}>{day}</span>)}
-          </div>
-
-          <div className="mt-1 grid grid-cols-7 gap-1">
-            {monthCells(year, month).map((day, index) => {
-              if (day === null) return <span key={`empty-${index}`} />;
-
-              const dateKey = localDate(new Date(year, month, day));
-              const isFuture = dateKey > today;
-              const isSelected = dateKey === selected;
-              const dayMoods = moodsByDay.get(dateKey) ?? [];
-              const average = averageRating(dayMoods);
-              const hasJournal = journalDays.has(dateKey);
-              const fullDate = new Date(year, month, day).toLocaleDateString(undefined, {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-              });
-
-              return (
-                <button
-                  key={dateKey}
-                  type="button"
-                  disabled={isFuture}
-                  onClick={() => setSelected(dateKey)}
-                  aria-label={`${fullDate}${average !== null ? `, mood ${moodForRating(average).label}` : ""}${hasJournal ? ", journal entry" : ""}`}
-                  aria-pressed={isSelected}
-                  className={`flex min-h-14 flex-col items-center justify-center rounded-xl border text-xs transition ${
-                    isSelected
-                      ? "border-primary bg-primary/20"
-                      : "border-transparent hover:border-primary/40 hover:bg-primary/10"
-                  } ${isFuture ? "opacity-30" : ""} ${dateKey === today && !isSelected ? "ring-1 ring-primary/60" : ""}`}
-                >
-                  <span className="font-medium">{day}</span>
-                  <span aria-hidden="true" className="text-base leading-none">
-                    {average !== null ? moodForRating(average).emoji : ""}
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    className={`h-1 w-1 rounded-full ${hasJournal ? "bg-primary" : "bg-transparent"}`}
-                  />
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-tertiary">
-            <span>🙂 average mood</span>
-            <span className="flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" /> journal entry
-            </span>
-            <span className="sm:ml-auto">Select a day to revisit it.</span>
-          </div>
+        <section className="rounded-4xl border border-tertiary/30 bg-secondary/70 p-4 shadow-sm sm:p-6">
+          <Calendar
+            title="Your calendar"
+            view={view}
+            onViewChange={setView}
+            selected={selected}
+            onSelect={setSelected}
+            moods={moods}
+            journals={journals}
+          />
         </section>
 
         <div className="flex flex-col gap-6">
           <QuoteCard />
 
-          <section className="rounded-[2rem] border border-tertiary/30 bg-secondary/70 p-5 shadow-sm">
+          <section className="rounded-4xl border border-tertiary/30 bg-secondary/70 p-5 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h2 className="text-lg font-semibold">
