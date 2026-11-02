@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { localDate } from "../models/date";
 import { loadJournalEntries, type JournalEntry } from "../models/journal";
-import { averageRating, chartPoints, dayEntries, loadMoodEntries, moodForRating, moods, sameMinute, saveMoodEntries, type MoodEntry, type Period } from "../models/mood";
+import { chartPoints, loadMoodEntries, moods, saveMoodEntries, upsertMoodEntry, type MoodEntry, type Period } from "../models/mood";
 import Calendar from "./Calendar";
 
 function displayDate(dateKey: string, today: string) {
@@ -25,7 +25,6 @@ export default function TrackMood() {
   const [error, setError] = useState("");
   const today = localDate(new Date());
   const points = chartPoints(entries, period, date);
-  const average = averageRating(dayEntries(entries, date));
 
   function pickDate(dateKey: string) {
     setDate(dateKey);
@@ -40,12 +39,8 @@ export default function TrackMood() {
       setError("Choose a date and time that isn't in the future.");
       return;
     }
-    if (entries.some((entry) => sameMinute(entry.createdAt, createdAt.toISOString()))) {
-      setError("Only one mood entry per minute.");
-      return;
-    }
 
-    const next = [...entries, { id: crypto.randomUUID(), rating, createdAt: createdAt.toISOString() }];
+    const next = upsertMoodEntry(entries, { id: crypto.randomUUID(), rating, createdAt: createdAt.toISOString() });
     if (!saveMoodEntries(next)) {
       setError("Could not save your mood. Check your browser storage and try again.");
       return;
@@ -156,6 +151,7 @@ export default function TrackMood() {
             ))}
           </div>
           <p className="mt-2 text-sm">{rating ? `${moods[rating - 1].emoji} ${moods[rating - 1].label}` : "Pick a mood"}</p>
+          <p className="mt-1 text-xs text-tertiary">Saving again in the same minute updates that entry.</p>
           <button
             type="button"
             onClick={addMood}

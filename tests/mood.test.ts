@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { chartPoints, dayEntries, moodForRating, sameMinute, type MoodEntry } from "../src/models/mood";
+import { chartPoints, dayEntries, moodForRating, sameMinute, upsertMoodEntry, type MoodEntry } from "../src/models/mood";
 
 const now = new Date(2026, 9, 29, 18, 30);
 const entries: MoodEntry[] = [
@@ -31,6 +31,21 @@ test("entries can be filtered for a selected day", () => {
 test("two timestamps in the same minute count as duplicates", () => {
   expect(sameMinute("2026-10-29T09:00:10.000Z", "2026-10-29T09:00:59.000Z")).toBe(true);
   expect(sameMinute("2026-10-29T09:00:59.000Z", "2026-10-29T09:01:00.000Z")).toBe(false);
+});
+
+test("saving in the same minute replaces the existing entry", () => {
+  const first: MoodEntry = { id: "first", rating: 3, createdAt: "2026-10-29T09:00:10.000Z" };
+  const updated: MoodEntry = { id: "updated", rating: 9, createdAt: "2026-10-29T09:00:50.000Z" };
+  const next = upsertMoodEntry([first], updated);
+  expect(next).toHaveLength(1);
+  expect(next[0]).toMatchObject({ id: "first", rating: 9 });
+  expect(next[0].createdAt).toBe(updated.createdAt);
+});
+
+test("a different minute adds a separate entry", () => {
+  const first: MoodEntry = { id: "first", rating: 3, createdAt: "2026-10-29T09:00:10.000Z" };
+  const later: MoodEntry = { id: "later", rating: 9, createdAt: "2026-10-29T09:01:10.000Z" };
+  expect(upsertMoodEntry([first], later).map((entry) => entry.id)).toEqual(["first", "later"]);
 });
 
 test("the mood scale has 10 steps", () => {

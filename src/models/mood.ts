@@ -48,6 +48,14 @@ export function sameMinute(first: string, second: string) {
   return Math.floor(Date.parse(first) / 60_000) === Math.floor(Date.parse(second) / 60_000);
 }
 
+export function upsertMoodEntry(entries: MoodEntry[], entry: MoodEntry) {
+  const existing = entries.find((item) => sameMinute(item.createdAt, entry.createdAt));
+  return [
+    ...entries.filter((item) => !sameMinute(item.createdAt, entry.createdAt)),
+    { ...entry, id: existing?.id ?? entry.id },
+  ];
+}
+
 export function dayEntries(entries: MoodEntry[], dateKey: string) {
   return entries
     .filter((entry) => localDate(new Date(entry.createdAt)) === dateKey)
