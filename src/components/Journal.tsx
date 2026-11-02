@@ -1,20 +1,23 @@
 import { useState, type FormEvent } from "react";
-import { loadJournalEntries, saveJournalEntries, tags, type JournalEntry } from "../models/journal";
+import { journalCreatedAt, loadJournalEntries, saveJournalEntries, tags, type JournalEntry } from "../models/journal";
+import { localDate } from "../models/date";
 
 export default function Journal() {
   const [entries, setEntries] = useState<JournalEntry[]>(loadJournalEntries);
   const [text, setText] = useState("");
   const [tag, setTag] = useState("");
+  const [date, setDate] = useState(() => localDate(new Date()));
+  const today = localDate(new Date());
 
   const addEntry = (event: FormEvent) => {
     event.preventDefault();
-    if (!text.trim() || !tag) return;
+    if (!text.trim() || !tag || !date || date > today) return;
 
     const next = [
       {
         id: crypto.randomUUID(),
         text: text.trim(),
-        createdAt: new Date().toISOString(),
+        createdAt: journalCreatedAt(date),
         tag,
       },
       ...entries,
@@ -26,6 +29,7 @@ export default function Journal() {
     setEntries(next);
     setText("");
     setTag("");
+    setDate(localDate(new Date()));
   };
 
   const removeEntry = (id: string) => {
@@ -69,9 +73,23 @@ export default function Journal() {
               ))}
             </select>
           </label>
+
+          <label className="text-sm" htmlFor="journal-date">
+            Date
+            <input
+              id="journal-date"
+              type="date"
+              required
+              max={today}
+              value={date}
+              onChange={(event) => setDate(event.target.value)}
+              className="mt-1 block rounded-lg border border-tertiary/40 bg-secondary p-2"
+            />
+          </label>
+
           <button
             type="submit"
-            disabled={!text.trim() || !tag}
+            disabled={!text.trim() || !tag || !date || date > today}
             className="rounded-full bg-primary px-6 py-2 font-medium text-[#323437] transition hover:opacity-90 disabled:opacity-50"
           >
             Add journal

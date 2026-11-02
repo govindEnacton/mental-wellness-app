@@ -38,6 +38,10 @@ export function saveJournalEntries(entries: JournalEntry[]) {
   }
 }
 
+export function journalCreatedAt(dateKey: string, now = new Date()) {
+  return new Date(`${dateKey}T${now.toTimeString().slice(0, 8)}`).toISOString();
+}
+
 export function journalEntriesOnDate(entries: JournalEntry[], dateKey: string) {
   return entries
     .filter((entry) => localDate(new Date(entry.createdAt)) === dateKey)
